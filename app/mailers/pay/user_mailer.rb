@@ -9,6 +9,10 @@ module Pay
     end
 
     def refund
+      if params[:pay_charge].respond_to? :receipt
+        attachments[params[:pay_charge].filename] = params[:pay_charge].receipt
+      end
+      
       mail mail_arguments
     end
 
