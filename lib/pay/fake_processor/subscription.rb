@@ -3,11 +3,9 @@ module Pay
     class Subscription
       attr_reader :pay_subscription
 
-      delegate :active?,
-        :canceled?,
-        :on_grace_period?,
-        :on_trial?,
+      delegate :canceled?,
         :ends_at,
+        :on_trial?,
         :owner,
         :processor_subscription,
         :processor_id,
@@ -44,10 +42,6 @@ module Pay
         )
       end
 
-      def change_quantity(quantity, **options)
-        pay_subscription.update(quantity: quantity)
-      end
-
       def on_grace_period?
         canceled? && Time.current < ends_at
       end
@@ -66,13 +60,10 @@ module Pay
         end
       end
 
-      def swap(plan, **options)
-        pay_subscription.update(processor_plan: plan, ends_at: nil, status: :active)
+      def swap(plan)
       end
 
-      # Retries the latest invoice for a Past Due subscription
-      def retry_failed_payment
-        pay_subscription.update(status: :active)
+      def change_quantity(quantity)
       end
     end
   end

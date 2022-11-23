@@ -57,7 +57,10 @@ module Pay
         end
 
         if payment_method_token?
-          add_payment_method(payment_method_token, default: true)
+          payment_method = ::Stripe::PaymentMethod.attach(payment_method_token, {customer: stripe_customer.id}, stripe_options)
+          pay_payment_method = save_payment_method(payment_method, default: false)
+          pay_payment_method.make_default!
+
           pay_customer.payment_method_token = nil
         end
 
@@ -86,14 +89,13 @@ module Pay
           confirm: true,
           currency: "usd",
           customer: processor_id,
-          expand: ["latest_charge.refunds"],
           payment_method: payment_method&.processor_id
         }.merge(options)
 
         payment_intent = ::Stripe::PaymentIntent.create(args, stripe_options)
         Pay::Payment.new(payment_intent).validate
 
-        charge = payment_intent.latest_charge
+        charge = payment_intent.charges.first
         Pay::Stripe::Charge.sync(charge.id, object: charge)
       rescue ::Stripe::StripeError => e
         raise Pay::Stripe::Error, e
@@ -103,7 +105,8 @@ module Pay
         quantity = options.delete(:quantity)
         opts = {
           expand: ["pending_setup_intent", "latest_invoice.payment_intent", "latest_invoice.charge"],
-          items: [plan: plan, quantity: quantity]
+          items: [plan: plan, quantity: quantity],
+          off_session: true
         }.merge(options)
 
         # Load the Stripe customer to verify it exists and update payment method if needed

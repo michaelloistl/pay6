@@ -14,7 +14,7 @@ module Pay
 
       def self.sync(charge_id, object: nil, stripe_account: nil, try: 0, retries: 1)
         # Skip loading the latest charge details from the API if we already have it
-        object ||= ::Stripe::Charge.retrieve({id: charge_id, expand: ["invoice.total_discount_amounts.discount", "invoice.total_tax_amounts.tax_rate", "refunds"]}, {stripe_account: stripe_account}.compact)
+        object ||= ::Stripe::Charge.retrieve({id: charge_id, expand: ["invoice.total_discount_amounts.discount", "invoice.total_tax_amounts.tax_rate"]}, {stripe_account: stripe_account}.compact)
 
         # Ignore charges without a Customer
         return if object.customer.blank?
@@ -94,7 +94,7 @@ module Pay
         else
           pay_customer.charges.create!(attrs.merge(processor_id: object.id))
         end
-      rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
+      rescue ActiveRecord::RecordInvalid
         try += 1
         if try <= retries
           sleep 0.1

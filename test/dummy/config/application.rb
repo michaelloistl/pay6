@@ -4,6 +4,7 @@ require "rails/all"
 
 Bundler.require(*Rails.groups)
 require "pay"
+require "pp"
 
 module Dummy
   class Application < Rails::Application
@@ -12,7 +13,6 @@ module Dummy
     # -- all .rb files in that directory are automatically loaded.
 
     config.active_job.queue_adapter = :test
-    config.action_mailer.default_url_options = {host: "localhost", port: 3000}
-    config.active_record.legacy_connection_handling = false if ("6.1".."7.0.4").cover?(Rails.version)
+    config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
   end
 end

@@ -5,37 +5,25 @@ module Pay
         attachments[params[:pay_charge].filename] = params[:pay_charge].receipt
       end
 
-      mail mail_arguments
+      mail to: to
     end
 
     def refund
-      if params[:pay_charge].respond_to? :receipt
-        attachments[params[:pay_charge].filename] = params[:pay_charge].receipt
-      end
-      
-      mail mail_arguments
+      mail to: to
     end
 
     def subscription_renewing
-      mail mail_arguments
+      mail to: to
     end
 
     def payment_action_required
-      mail mail_arguments
-    end
-
-    def subscription_trial_will_end
-      mail mail_arguments
-    end
-
-    def subscription_trial_ended
-      mail mail_arguments
+      mail to: to
     end
 
     private
 
-    def mail_arguments
-      Pay.mail_arguments.call(mailer_name, params)
+    def to
+      "#{params[:pay_customer].customer_name} <#{params[:pay_customer].email}>"
     end
   end
 end
